@@ -167,6 +167,6 @@ There are other ways to import Aesprite files and use them in Go. This library a
 using Ebitengine. You might be interested in these projects:
 
 * [SolarLune/goaseprite](https://pkg.go.dev/github.com/solarlune/goaseprite): low-dependency library for making sense of Aseprite export formats.
-  If you're _not_ using Ebitengine you may find this useful.
+  It doesn't integrate with Ebitengine, so if all you want to do is read Aseprite output formats, this could be useful.
 * [tducasse/ebiten-aesprite](https://pkg.go.dev/github.com/tducasse/ebiten-aseprite): easy-to-use but hardcoded for 60 Hz, and doesn't support arbitrary
   matrix transformations.
