@@ -131,7 +131,7 @@ Take care not to put too much logic in callbacks as it can become hard to manage
 ### Cloning Animations
 
 To reuse the images loaded as part of the original sprite sheet, just `Clone()` an existing animation as follows.
-Each cloned animation tracks its state separately.
+Each cloned animation tracks its state separately. 
 
 ```go
 ball, err = asepritev3.LoadAnimation(embedded, "imgs/ball.json") 
@@ -141,4 +141,19 @@ if err != nil {
 ball1 := ball.Clone() 
 ball2 := ball.Clone()
 ball3 := ball.Clone()
+```
+
+All callbacks which are set on the source animation will be copied as well. To create a lightweight animation which
+doesn't receive a copy of all its callbacks, use `NewFlyweightAnimation`, which only inherits the SpriteSheet of its
+argument.
+
+```go
+ball, err = asepritev3.LoadAnimation(embedded, "imgs/ball.json")
+if err != nil {
+	panic(err)
+}
+balls := make([]Animation, 100)
+for i := 0; i < 100; i++ {
+	balls[i] = NewFlyweightAnimation(ball) // lightweight copy; no callbacks transferred
+}
 ```

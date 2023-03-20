@@ -39,13 +39,21 @@ type Animation struct {
 // Clone creates a shallow clone of this animation which uses the same SpriteSheet as the original, but gets its own
 // callbacks and state. The tag, frame, and callbacks set on the source animation are copied for convenience. All timing
 // information is reset at the time the Animation is cloned.
-func (a *Animation) Clone() *Animation {
-	return &Animation{
+func (a *Animation) Clone() Animation {
+	return Animation{
 		framesByTagName: a.framesByTagName,
 		callbacks:       maps.Clone(a.callbacks),
 		currTag:         a.currTag,
 		currFrame:       a.currFrame,
 		paused:          a.paused,
+	}
+}
+
+// NewFlyweightAnimation creates a new animation which uses the information loaded into the provided animation's
+// SpriteSheet.
+func NewFlyweightAnimation(source *Animation) Animation {
+	return Animation{
+		framesByTagName: source.framesByTagName,
 	}
 }
 
