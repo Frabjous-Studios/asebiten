@@ -1,4 +1,4 @@
-package asepritev3
+package aseprite
 
 import (
 	"encoding/json"
@@ -11,8 +11,8 @@ import (
 	"strings"
 )
 
-// SpriteSheet represents the json export format for an Aesprite v1.3 sprite sheet, which has been exported with frames
-// in an *Array*.
+// SpriteSheet represents the json export format for an Aesprite sprite sheet, which has been exported with frames in an
+// *Array*.
 type SpriteSheet struct {
 	Frames []*Frame `json:"frames"`
 	Meta   Meta     `json:"meta"`
@@ -131,6 +131,14 @@ func loadWithTags(sheet *SpriteSheet) (map[string][]asebiten.Frame, error) {
 				DurationMillis: int64(frame.Duration),
 			})
 		}
+		switch tag.Direction {
+		case "reverse":
+			byTagName[tag.Name] = reverse(byTagName[tag.Name])
+		case "pingpong":
+			byTagName[tag.Name] = pingpong(byTagName[tag.Name])
+		case "pingpong_reverse":
+			byTagName[tag.Name] = reverse(pingpong(byTagName[tag.Name]))
+		}
 	}
 	return byTagName, nil
 }
@@ -164,4 +172,19 @@ func loadImage(fs fs.FS, jsonPath string, sheet *SpriteSheet) (*ebiten.Image, er
 		return nil, err
 	}
 	return ebiten.NewImageFromImage(img), nil
+}
+
+func reverse(frames []asebiten.Frame) []asebiten.Frame {
+	n := len(frames) - 1
+	for i := 0; i < len(frames)/2; i++ {
+		frames[i], frames[n-i] = frames[n-i], frames[i]
+	}
+	return frames
+}
+
+func pingpong(frames []asebiten.Frame) []asebiten.Frame {
+	for i := len(frames) - 2; i >= 1; i-- {
+		frames = append(frames, frames[i])
+	}
+	return frames
 }

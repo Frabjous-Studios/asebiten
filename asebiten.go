@@ -49,8 +49,7 @@ func (a *Animation) Clone() Animation {
 	}
 }
 
-// NewFlyweightAnimation creates a new animation which uses the information loaded into the provided animation's
-// SpriteSheet.
+// NewFlyweightAnimation creates a new animation which uses the SpriteSheet already loaded up in the provided animation.
 func NewFlyweightAnimation(source *Animation) Animation {
 	return Animation{
 		framesByTagName: source.framesByTagName,
@@ -114,9 +113,12 @@ func (a *Animation) SetTag(tag string) {
 	a.currTag = tag
 }
 
-// OnEnd registers the provided Callback to run on the same frame that the animation end frame is crossed. Each Callback
-// is called only once everytime the animation ends, even if the animation ends multiple times in a single frame.
-// Callbacks for a given tag can be disabled by calling OnEnd(tag, nil).
+// OnEnd registers the provided Callback to run on the same frame that the final frame of the animation  is crossed.
+// Each Callback is called only once every time the animation ends, even if the animation ends multiple times during a
+// single frame. Callbacks for a given tag can be disabled by calling OnEnd(tag, nil).
+//
+// Note: for "reverse" or "pingpong" animations, the end of the animation is defined as the end of the sequence of
+// frames stored by asebiten.
 func (a *Animation) OnEnd(tag string, callback Callback) {
 	a.callbacks[tag] = callback
 }

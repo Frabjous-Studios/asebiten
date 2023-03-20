@@ -8,7 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/kalexmills/asebiten"
-	asepritev3 "github.com/kalexmills/asebiten/models/asepritev3"
+	"github.com/kalexmills/asebiten/aseprite"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
 	"image/color"
@@ -56,6 +56,10 @@ type Game struct {
 
 func (g *Game) Update() error {
 	switch {
+	case inpututil.IsKeyJustPressed(ebiten.Key4):
+		anim.SetTag("Tag4")
+	case inpututil.IsKeyJustPressed(ebiten.Key5):
+		anim.SetTag("Tag3")
 	case inpututil.IsKeyJustPressed(ebiten.Key3):
 		anim.SetTag("Tag")
 	case inpututil.IsKeyJustPressed(ebiten.Key2):
@@ -74,7 +78,7 @@ func (g *Game) Update() error {
 
 var anim *asebiten.Animation
 
-const msg = "animations: press (1), (2), or (3);\ntoggle pause: (P), restart: (R)"
+const msg = "animations: select (1-5);\ntoggle pause: (P), restart: (R)"
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	text.Draw(screen, msg, mplusFont, 10, 10, color.White)
@@ -93,7 +97,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 func main() {
 	var err error
 
-	anim, err = asepritev3.LoadAnimation(embedded, path)
+	anim, err = aseprite.LoadAnimation(embedded, path)
 	if err != nil {
 		log.Fatal(err)
 	}
