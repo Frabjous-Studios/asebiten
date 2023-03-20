@@ -9,8 +9,6 @@ Load exported Aseprite animations and use them in Ebitengine games.
 Inspired by [ebiten-aseprite](https://pkg.go.dev/github.com/tducasse/ebiten-aseprite), with a simplified interface and
 an upgrade path for different Aesprite export formats.
 
-Loads all tagged animations and 
-
 Tested with Aesprite v1.3-rc1.
 
 ## Usage:
