@@ -1,4 +1,4 @@
-package v3
+package asepritev3
 
 import (
 	"encoding/json"
@@ -95,7 +95,9 @@ func LoadAnimation(fs fs.FS, jsonPath string) (*asebiten.Animation, error) {
 	if err != nil {
 		return nil, err
 	}
-	return asebiten.NewAnimation(byTagName), nil
+	result := asebiten.NewAnimation(byTagName)
+	result.Source = sheet
+	return result, nil
 }
 
 func loadNoTags(sheet *SpriteSheet) (map[string][]asebiten.Frame, error) {

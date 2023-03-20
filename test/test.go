@@ -8,7 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/kalexmills/asebiten"
-	asepritev3 "github.com/kalexmills/asebiten/models/v3"
+	asepritev3 "github.com/kalexmills/asebiten/models/asepritev3"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
 	"image/color"

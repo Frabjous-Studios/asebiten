@@ -2,6 +2,7 @@ package asebiten
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+	"golang.org/x/exp/maps"
 	"time"
 )
 
@@ -29,6 +30,23 @@ type Animation struct {
 
 	accumMillis int64
 	callbacks   map[string]Callback
+
+	// Source is a struct representing the raw JSON read from the Aesprite SpriteSheet on import. Cast to the correct
+	// version's SpriteSheet model to use.
+	Source any
+}
+
+// Clone creates a shallow clone of this animation which uses the same SpriteSheet as the original, but gets its own
+// callbacks and state. The tag, frame, and callbacks set on the source animation are copied for convenience. All timing
+// information is reset at the time the Animation is cloned.
+func (a *Animation) Clone() *Animation {
+	return &Animation{
+		framesByTagName: a.framesByTagName,
+		callbacks:       maps.Clone(a.callbacks),
+		currTag:         a.currTag,
+		currFrame:       a.currFrame,
+		paused:          a.paused,
+	}
 }
 
 // Callback is used for animation callbacks, which are triggered whenever an animation runs out of frames. All callbacks
@@ -90,6 +108,7 @@ func (a *Animation) SetTag(tag string) {
 
 // OnEnd registers the provided Callback to run on the same frame that the animation end frame is crossed. Each Callback
 // is called only once everytime the animation ends, even if the animation ends multiple times in a single frame.
+// Callbacks for a given tag can be disabled by calling OnEnd(tag, nil).
 func (a *Animation) OnEnd(tag string, callback Callback) {
 	a.callbacks[tag] = callback
 }
