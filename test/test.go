@@ -45,6 +45,9 @@ func init() {
 		DPI:     dpi,
 		Hinting: font.HintingFull, // Use quantization to save glyph cache images.
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 type Game struct {

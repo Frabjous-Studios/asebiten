@@ -151,7 +151,7 @@ func LoadSpriteSheet(fs fs.FS, jsonPath string) (SpriteSheet, error) {
 		return SpriteSheet{}, fmt.Errorf("version mismatch; expected 1.3, got %s", result.Meta.Version)
 	}
 	result.Image, err = loadImage(fs, jsonPath, &result)
-	return result, nil
+	return result, err
 }
 
 func loadImage(fs fs.FS, jsonPath string, sheet *SpriteSheet) (*ebiten.Image, error) {
