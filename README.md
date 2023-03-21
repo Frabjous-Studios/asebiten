@@ -1,7 +1,6 @@
 # asebiten
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/kalexmills/asebiten)](https://goreportcard.com/report/github.com/kalexmills/asebiten)
-![GitHub branch checks state](https://img.shields.io/github/checks-status/kalexmills/asebiten/main)
 ![GitHub](https://img.shields.io/github/license/kalexmills/asebiten)
 
 Load exported Aseprite animations and use them in Ebitengine games.
