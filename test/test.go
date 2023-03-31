@@ -8,7 +8,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/kalexmills/asebiten"
-	"github.com/kalexmills/asebiten/aseprite"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
 	"image/color"
@@ -97,7 +96,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 func main() {
 	var err error
 
-	anim, err = aseprite.LoadAnimation(embedded, path)
+	anim, err = asebiten.LoadAnimation(embedded, path)
 	if err != nil {
 		log.Fatal(err)
 	}

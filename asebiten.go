@@ -33,11 +33,11 @@ type Animation struct {
 
 	// FramesByTagName lists all frames, keyed by their tag. Take care when editing the images associated with this map,
 	// as Asebiten uses subimages for each tag, even when that's redundant.
-	FramesByTagName map[string][]Frame
+	FramesByTagName map[string][]AniFrame
 
 	// Source is a struct representing the raw JSON read from the Aesprite SpriteSheet on import. Cast to the correct
 	// version's SpriteSheet model to use.
-	Source any
+	Source SpriteSheet
 }
 
 func (r Rect) ImageRect() image.Rectangle {
@@ -81,7 +81,7 @@ type Callback func(*Animation)
 
 // NewAnimation creates a new Animation using the provided map from tag names to a list of frames to run. If a nil map
 // is passed in this func also returns nil.
-func NewAnimation(anim map[string][]Frame) *Animation {
+func NewAnimation(anim map[string][]AniFrame) *Animation {
 	if anim == nil {
 		return nil
 	}
@@ -179,16 +179,14 @@ func (a *Animation) FrameIdx() int {
 }
 
 // Frame retrieves the current frame for the provided animation.
-func (a *Animation) Frame() Frame {
+func (a *Animation) Frame() AniFrame {
 	return a.FramesByTagName[a.currTag][a.currFrame]
 }
 
-// Frame denotes a single frame of this animation.
-type Frame struct {
+// AniFrame denotes a single frame of this animation.
+type AniFrame struct {
 	// FrameIdx is the original index of this frame from Aseprite.
 	FrameIdx int
-	// Slices describes all slices (e.g. hitboxes) which are part of this frame, keyed by their name.
-	Slices map[string]Rect
 	// Image represents an image to use. For efficiency, it's recommended to use subimage for each frame.
 	Image *ebiten.Image
 	// DurationMillis represents the number of milliseconds this frame should be shown.

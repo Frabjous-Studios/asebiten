@@ -1,10 +1,9 @@
-package aseprite
+package asebiten
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/kalexmills/asebiten"
 	"image"
 	"io/fs"
 	"path/filepath"
@@ -22,29 +21,29 @@ type SpriteSheet struct {
 
 	// Animations stores anmiations ready to go; keyed by frameTag. If no frametags are used the
 	// entire sprite sheet is available under a single animation keyed by the empty string.
-	Animations map[string]asebiten.Animation
+	Animations map[string]Animation
 }
 
 type Meta struct {
-	App       string        `json:"app"`
-	Version   string        `json:"version"`
-	Image     string        `json:"image"`
-	Format    string        `json:"format"`
-	Size      asebiten.Size `json:"size"`
-	Scale     string        `json:"scale"`
-	FrameTags []FrameTag    `json:"frameTags"`
-	Layers    []Layer       `json:"layers"`
-	Slices    []Slice       `json:"slices"`
+	App       string     `json:"app"`
+	Version   string     `json:"version"`
+	Image     string     `json:"image"`
+	Format    string     `json:"format"`
+	Size      Size       `json:"size"`
+	Scale     string     `json:"scale"`
+	FrameTags []FrameTag `json:"frameTags"`
+	Layers    []Layer    `json:"layers"`
+	Slices    []Slice    `json:"slices"`
 }
 
 type Slice struct {
-	Name string `json:"name"`
-	Keys []SliceKey
+	Name string     `json:"name"`
+	Keys []SliceKey `json:"keys"`
 }
 
 type SliceKey struct {
-	Frame  int `json:"frame"`
-	Bounds asebiten.Rect
+	Frame  int  `json:"frame"`
+	Bounds Rect `json:"bounds"`
 }
 
 type FrameTag struct {
@@ -62,22 +61,22 @@ type Layer struct {
 }
 
 type Frame struct {
-	Frame            asebiten.Rect `json:"Frame"`
-	Rotated          bool          `json:"rotated"`
-	Trimmed          bool          `json:"trimmed"`
-	SpriteSourceSize asebiten.Rect `json:"spriteSourceSize"`
-	SourceSize       asebiten.Size `json:"sourceSize"`
-	Duration         int           `json:"duration"`
+	Frame            Rect `json:"Frame"`
+	Rotated          bool `json:"rotated"`
+	Trimmed          bool `json:"trimmed"`
+	SpriteSourceSize Rect `json:"spriteSourceSize"`
+	SourceSize       Size `json:"sourceSize"`
+	Duration         int  `json:"duration"`
 }
 
 // LoadAnimation loads a sprite from the provided filesystem, based on the provided json path. The image paths are
 // assumed to be found in the directory relative to the path passed in.
-func LoadAnimation(fs fs.FS, jsonPath string) (*asebiten.Animation, error) {
+func LoadAnimation(fs fs.FS, jsonPath string) (*Animation, error) {
 	sheet, err := LoadSpriteSheet(fs, jsonPath)
 	if err != nil {
 		return nil, err
 	}
-	var byTagName map[string][]asebiten.Frame
+	var byTagName map[string][]AniFrame
 	if len(sheet.Meta.FrameTags) == 0 {
 		byTagName, err = loadNoTags(&sheet)
 	} else {
@@ -86,24 +85,24 @@ func LoadAnimation(fs fs.FS, jsonPath string) (*asebiten.Animation, error) {
 	if err != nil {
 		return nil, err
 	}
-	result := asebiten.NewAnimation(byTagName)
+	result := NewAnimation(byTagName)
 	result.Source = sheet
 	return result, nil
 }
 
-func loadNoTags(sheet *SpriteSheet) (map[string][]asebiten.Frame, error) {
-	byTagName := make(map[string][]asebiten.Frame)
+func loadNoTags(sheet *SpriteSheet) (map[string][]AniFrame, error) {
+	byTagName := make(map[string][]AniFrame)
 	for _, frame := range sheet.Frames {
 		img := ebiten.NewImageFromImage(sheet.Image.SubImage(frame.Frame.ImageRect()))
-		byTagName[""] = append(byTagName[""], asebiten.Frame{
+		byTagName[""] = append(byTagName[""], AniFrame{
 			Image:          img,
 			DurationMillis: int64(frame.Duration),
 		})
 	}
-	return loadSlices(sheet, byTagName)
+	return byTagName, nil
 }
 
-func loadWithTags(sheet *SpriteSheet) (map[string][]asebiten.Frame, error) {
+func loadWithTags(sheet *SpriteSheet) (map[string][]AniFrame, error) {
 	byTagName, err := loadNoTags(sheet)
 	if err != nil {
 		return nil, err
@@ -117,7 +116,7 @@ func loadWithTags(sheet *SpriteSheet) (map[string][]asebiten.Frame, error) {
 				img = ebiten.NewImageFromImage(sheet.Image.SubImage(frame.Frame.ImageRect()))
 				imgCache[i] = img
 			}
-			byTagName[tag.Name] = append(byTagName[tag.Name], asebiten.Frame{
+			byTagName[tag.Name] = append(byTagName[tag.Name], AniFrame{
 				FrameIdx:       i,
 				Image:          img,
 				DurationMillis: int64(frame.Duration),
@@ -130,27 +129,6 @@ func loadWithTags(sheet *SpriteSheet) (map[string][]asebiten.Frame, error) {
 			byTagName[tag.Name] = pingpong(byTagName[tag.Name])
 		case "pingpong_reverse":
 			byTagName[tag.Name] = reverse(pingpong(byTagName[tag.Name]))
-		}
-	}
-	return loadSlices(sheet, byTagName)
-}
-
-func loadSlices(sheet *SpriteSheet, byTagName map[string][]asebiten.Frame) (map[string][]asebiten.Frame, error) {
-	// load slice data and make accessible per-frame.
-	sliceData := make(map[string][]asebiten.Rect, len(sheet.Frames))
-	for _, slice := range sheet.Meta.Slices {
-		sliceData[slice.Name] = make([]asebiten.Rect, len(sheet.Frames))
-		for _, sliceKey := range slice.Keys {
-			sliceData[slice.Name][sliceKey.Frame] = sliceKey.Bounds
-		}
-	}
-	for tagName, frames := range byTagName {
-		for idx := range frames {
-			byTagName[tagName][idx].Slices = make(map[string]asebiten.Rect)
-			for key, slices := range sliceData {
-				frameIdx := byTagName[tagName][idx].FrameIdx
-				byTagName[tagName][idx].Slices[key] = slices[frameIdx]
-			}
 		}
 	}
 	return byTagName, nil
@@ -187,7 +165,7 @@ func loadImage(fs fs.FS, jsonPath string, sheet *SpriteSheet) (*ebiten.Image, er
 	return ebiten.NewImageFromImage(img), nil
 }
 
-func reverse(frames []asebiten.Frame) []asebiten.Frame {
+func reverse(frames []AniFrame) []AniFrame {
 	n := len(frames) - 1
 	for i := 0; i < len(frames)/2; i++ {
 		frames[i], frames[n-i] = frames[n-i], frames[i]
@@ -195,7 +173,7 @@ func reverse(frames []asebiten.Frame) []asebiten.Frame {
 	return frames
 }
 
-func pingpong(frames []asebiten.Frame) []asebiten.Frame {
+func pingpong(frames []AniFrame) []AniFrame {
 	for i := len(frames) - 2; i >= 1; i-- {
 		frames = append(frames, frames[i])
 	}
