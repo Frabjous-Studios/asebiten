@@ -3,6 +3,7 @@ package asebiten
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"golang.org/x/exp/maps"
+	"image"
 	"time"
 )
 
@@ -148,6 +149,11 @@ func (a *Animation) DrawTo(screen *ebiten.Image, options *ebiten.DrawImageOption
 
 	frame := a.framesByTagName[a.currTag][a.currFrame]
 	screen.DrawImage(frame.Image, options)
+}
+
+// Bounds retrieves the bounds of the current frame.
+func (a *Animation) Bounds() image.Rectangle {
+	return a.framesByTagName[a.currTag][a.currFrame].Image.Bounds()
 }
 
 // Frame denotes a single frame of this animation.
