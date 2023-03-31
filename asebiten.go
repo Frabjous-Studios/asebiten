@@ -157,8 +157,13 @@ func (a *Animation) Bounds() image.Rectangle {
 	return a.FramesByTagName[a.currTag][a.currFrame].Image.Bounds()
 }
 
-// CurrFrame retrieves the current frame for the provided animation.
-func (a *Animation) CurrFrame() Frame {
+// FrameIdx retrieves the index of the current frame.
+func (a *Animation) FrameIdx() int {
+	return a.currFrame
+}
+
+// Frame retrieves the current frame for the provided animation.
+func (a *Animation) Frame() Frame {
 	return a.FramesByTagName[a.currTag][a.currFrame]
 }
 
