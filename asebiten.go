@@ -34,9 +34,25 @@ type Animation struct {
 	// FramesByTagName lists all frames, keyed by their tag. Take care when editing the images associated with this map,
 	// as Asebiten uses subimages for each tag, even when that's redundant.
 	FramesByTagName map[string][]Frame
+
 	// Source is a struct representing the raw JSON read from the Aesprite SpriteSheet on import. Cast to the correct
 	// version's SpriteSheet model to use.
 	Source any
+}
+
+func (r Rect) ImageRect() image.Rectangle {
+	return image.Rect(r.X, r.Y, r.X+r.W, r.Y+r.H)
+}
+
+type Rect struct {
+	X int `json:"x"`
+	Y int `json:"y"`
+	Size
+}
+
+type Size struct {
+	W int `json:"w"`
+	H int `json:"h"`
 }
 
 // Clone creates a shallow clone of this animation which uses the same SpriteSheet as the original, but gets its own
@@ -169,6 +185,10 @@ func (a *Animation) Frame() Frame {
 
 // Frame denotes a single frame of this animation.
 type Frame struct {
+	// FrameIdx is the original index of this frame from Aseprite.
+	FrameIdx int
+	// Slices describes all slices (e.g. hitboxes) which are part of this frame, keyed by their name.
+	Slices map[string]Rect
 	// Image represents an image to use. For efficiency, it's recommended to use subimage for each frame.
 	Image *ebiten.Image
 	// DurationMillis represents the number of milliseconds this frame should be shown.
