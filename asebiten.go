@@ -24,14 +24,16 @@ var (
 // Every Animation has an empty tag which loops through every frame in the Sprite Sheet in order. This is the default
 // animation which will be played.
 type Animation struct {
-	paused          bool
-	framesByTagName map[string][]Frame
-	currTag         string
-	currFrame       int
+	paused    bool
+	currTag   string
+	currFrame int
 
 	accumMillis int64
 	callbacks   map[string]Callback
 
+	// FramesByTagName lists all frames, keyed by their tag. Take care when editing the images associated with this map,
+	// as Asebiten uses subimages for each tag, even when that's redundant.
+	FramesByTagName map[string][]Frame
 	// Source is a struct representing the raw JSON read from the Aesprite SpriteSheet on import. Cast to the correct
 	// version's SpriteSheet model to use.
 	Source any
@@ -42,7 +44,7 @@ type Animation struct {
 // information is reset at the time the Animation is cloned.
 func (a *Animation) Clone() Animation {
 	return Animation{
-		framesByTagName: a.framesByTagName,
+		FramesByTagName: a.FramesByTagName,
 		callbacks:       maps.Clone(a.callbacks),
 		currTag:         a.currTag,
 		currFrame:       a.currFrame,
@@ -53,7 +55,7 @@ func (a *Animation) Clone() Animation {
 // NewFlyweightAnimation creates a new animation which uses the SpriteSheet already loaded up in the provided animation.
 func NewFlyweightAnimation(source *Animation) Animation {
 	return Animation{
-		framesByTagName: source.framesByTagName,
+		FramesByTagName: source.FramesByTagName,
 	}
 }
 
@@ -68,7 +70,7 @@ func NewAnimation(anim map[string][]Frame) *Animation {
 		return nil
 	}
 	result := &Animation{
-		framesByTagName: anim,
+		FramesByTagName: anim,
 		callbacks:       make(map[string]Callback),
 		currTag:         "",
 		currFrame:       0,
@@ -133,9 +135,9 @@ func (a *Animation) Update() {
 	a.accumMillis += DeltaMillis
 
 	// advance the current frame until you can't; this loop usually runs only once per tick
-	for a.accumMillis > a.framesByTagName[a.currTag][a.currFrame].DurationMillis {
-		a.accumMillis -= a.framesByTagName[a.currTag][a.currFrame].DurationMillis
-		a.currFrame = (a.currFrame + 1) % len(a.framesByTagName[a.currTag])
+	for a.accumMillis > a.FramesByTagName[a.currTag][a.currFrame].DurationMillis {
+		a.accumMillis -= a.FramesByTagName[a.currTag][a.currFrame].DurationMillis
+		a.currFrame = (a.currFrame + 1) % len(a.FramesByTagName[a.currTag])
 		if a.currFrame != 0 || a.callbacks[a.currTag] == nil {
 			continue
 		}
@@ -146,14 +148,18 @@ func (a *Animation) Update() {
 
 // DrawTo draws this animation to the provided screen using the provided options.
 func (a *Animation) DrawTo(screen *ebiten.Image, options *ebiten.DrawImageOptions) {
-
-	frame := a.framesByTagName[a.currTag][a.currFrame]
+	frame := a.FramesByTagName[a.currTag][a.currFrame]
 	screen.DrawImage(frame.Image, options)
 }
 
 // Bounds retrieves the bounds of the current frame.
 func (a *Animation) Bounds() image.Rectangle {
-	return a.framesByTagName[a.currTag][a.currFrame].Image.Bounds()
+	return a.FramesByTagName[a.currTag][a.currFrame].Image.Bounds()
+}
+
+// CurrFrame retrieves the current frame for the provided animation.
+func (a *Animation) CurrFrame() Frame {
+	return a.FramesByTagName[a.currTag][a.currFrame]
 }
 
 // Frame denotes a single frame of this animation.
