@@ -16,7 +16,10 @@ import (
 )
 
 // NOTE: change path in the two places below to test another version.
-const path = "v1.3-rc1-x64/anim-test.json"
+const (
+	path          = "v1.3-rc1-x64/anim-test.json"
+	indicatorPath = "v1.3-rc1-x64/ui-indicators.json"
+)
 
 //go:embed v1.3-rc1-x64
 var embedded embed.FS
@@ -53,6 +56,11 @@ type Game struct {
 	keys []ebiten.Key
 }
 
+var (
+	ticks = 0
+	frame = 0
+)
+
 func (g *Game) Update() error {
 	switch {
 	case inpututil.IsKeyJustPressed(ebiten.Key4):
@@ -72,10 +80,23 @@ func (g *Game) Update() error {
 	}
 	asebiten.Update()
 	anim.Update()
+
+	ticks++
+	if ticks > 60 {
+		frame++
+		if err := indicator.SetFrame(frame); err != nil {
+			frame = 1
+			_ = indicator.SetFrame(frame)
+		}
+		ticks = 0
+	}
 	return nil
 }
 
-var anim *asebiten.Animation
+var (
+	anim      *asebiten.Animation
+	indicator *asebiten.Animation
+)
 
 const msg = "animations: select (1-5);\ntoggle pause: (P), restart: (R)"
 
@@ -87,6 +108,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	op.GeoM.Scale(4, 4)
 	op.GeoM.Translate(screenWidth/2, screenHeight/2)
 	anim.DrawTo(screen, op)
+
+	op.GeoM.Reset()
+	op.GeoM.Translate(-float64(frameWidth)/2, float64(frameHeight))
+	op.GeoM.Scale(4, 4)
+	op.GeoM.Translate(screenWidth/2, screenHeight/2)
+	indicator.DrawTo(screen, op)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -100,6 +127,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	indicator, err = asebiten.LoadAnimation(embedded, indicatorPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	indicator.Pause()
+	_ = indicator.SetFrame(1)
 
 	fmt.Println("loaded")
 
