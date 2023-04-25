@@ -2,6 +2,7 @@ package asebiten
 
 import (
 	"errors"
+	"github.com/hajimehoshi/ebiten/v2"
 	"golang.org/x/exp/maps"
 	"image"
 	"time"
