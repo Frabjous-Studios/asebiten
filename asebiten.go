@@ -1,7 +1,7 @@
 package asebiten
 
 import (
-	"github.com/hajimehoshi/ebiten/v2"
+	"errors"
 	"golang.org/x/exp/maps"
 	"image"
 	"time"
@@ -111,6 +111,14 @@ func (a *Animation) Pause() {
 // Resume resumes a previously paused animation. Animations are running by default.
 func (a *Animation) Resume() {
 	a.paused = false
+}
+
+func (a *Animation) SetFrame(idx int) error {
+	if idx < 0 || len(a.FramesByTagName[a.currTag]) <= idx {
+		return errors.New("frame index out of bounds")
+	}
+	a.currFrame = idx
+	return nil
 }
 
 // Toggle toggles the running state of this animation; if running it pauses, if paused, it resumes.
