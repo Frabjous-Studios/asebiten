@@ -61,7 +61,7 @@ type Layer struct {
 }
 
 type Frame struct {
-	Frame            Rect `json:"Frame"`
+	Frame            Rect `json:"frame"`
 	Rotated          bool `json:"rotated"`
 	Trimmed          bool `json:"trimmed"`
 	SpriteSourceSize Rect `json:"spriteSourceSize"`
