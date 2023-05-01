@@ -6,7 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
 	"io/fs"
-	"path/filepath"
+	"path"
 	"strings"
 )
 
@@ -154,7 +154,7 @@ func LoadSpriteSheet(fs fs.FS, jsonPath string) (SpriteSheet, error) {
 }
 
 func loadImage(fs fs.FS, jsonPath string, sheet *SpriteSheet) (*ebiten.Image, error) {
-	reader, err := fs.Open(filepath.Join(filepath.Dir(jsonPath), sheet.Meta.Image))
+	reader, err := fs.Open(path.Join(path.Dir(jsonPath), sheet.Meta.Image))
 	if err != nil {
 		return nil, err
 	}
