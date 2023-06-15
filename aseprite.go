@@ -3,7 +3,6 @@ package asebiten
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hajimehoshi/ebiten/v2"
 	"image"
 	"io/fs"
 	"path"
@@ -92,9 +91,10 @@ func LoadAnimation(fs fs.FS, jsonPath string) (*Animation, error) {
 
 func loadNoTags(sheet *SpriteSheet) (map[string][]AniFrame, error) {
 	byTagName := make(map[string][]AniFrame)
-	for _, frame := range sheet.Frames {
+	for idx, frame := range sheet.Frames {
 		img := ebiten.NewImageFromImage(sheet.Image.SubImage(frame.Frame.ImageRect()))
 		byTagName[""] = append(byTagName[""], AniFrame{
+			FrameIdx:       idx,
 			Image:          img,
 			DurationMillis: int64(frame.Duration),
 		})
