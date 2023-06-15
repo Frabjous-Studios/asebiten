@@ -3,6 +3,7 @@ package asebiten
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/hajimehoshi/ebiten/v2"
 	"image"
 	"io/fs"
 	"path"
