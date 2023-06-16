@@ -17,7 +17,7 @@ import (
 
 // NOTE: change path in the two places below to test another version.
 const (
-	path          = "v1.3-rc1-x64/anim-test.json"
+	path          = "v1.3-rc1-x64/animation_terminal.json"
 	indicatorPath = "v1.3-rc1-x64/ui-indicators.json"
 )
 
@@ -28,8 +28,8 @@ const (
 	screenWidth  = 320
 	screenHeight = 240
 
-	frameWidth  = 16
-	frameHeight = 16
+	frameWidth  = 112
+	frameHeight = 100
 )
 
 var (
@@ -63,15 +63,13 @@ var (
 
 func (g *Game) Update() error {
 	switch {
-	case inpututil.IsKeyJustPressed(ebiten.Key4):
-		anim.SetTag("Tag4")
-	case inpututil.IsKeyJustPressed(ebiten.Key5):
-		anim.SetTag("Tag3")
-	case inpututil.IsKeyJustPressed(ebiten.Key3):
-		anim.SetTag("Tag")
-	case inpututil.IsKeyJustPressed(ebiten.Key2):
-		anim.SetTag("Tag2")
 	case inpututil.IsKeyJustPressed(ebiten.Key1):
+		anim.SetTag("ON")
+	case inpututil.IsKeyJustPressed(ebiten.Key2):
+		anim.SetTag("OFF")
+	case inpututil.IsKeyJustPressed(ebiten.Key3):
+		anim.SetTag("CRASH")
+	case inpututil.IsKeyJustPressed(ebiten.Key4):
 		anim.SetTag("")
 	case inpututil.IsKeyJustPressed(ebiten.KeyP):
 		anim.Toggle()
@@ -103,12 +101,13 @@ const msg = "animations: select (1-5);\ntoggle pause: (P), restart: (R)"
 func (g *Game) Draw(screen *ebiten.Image) {
 	text.Draw(screen, msg, mplusFont, 10, 10, color.White)
 
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(-float64(frameWidth)/2, -float64(frameHeight)/2)
-	op.GeoM.Scale(4, 4)
-	op.GeoM.Translate(screenWidth/2, screenHeight/2)
-	anim.DrawTo(screen, op)
+	anim.DrawPackedTo(screen, func(opts *ebiten.DrawImageOptions) {
+		opts.GeoM.Translate(screenWidth/2-frameWidth/2, screenHeight/2-frameHeight/2)
+		//opts.GeoM.Scale(2, 4)
+		//op.GeoM.Translate(screenWidth/2, screenHeight/2)
+	})
 
+	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Reset()
 	op.GeoM.Translate(-float64(frameWidth)/2, float64(frameHeight))
 	op.GeoM.Scale(4, 4)
@@ -127,6 +126,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(anim)
 
 	indicator, err = asebiten.LoadAnimation(embedded, indicatorPath)
 	if err != nil {

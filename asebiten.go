@@ -171,10 +171,21 @@ func (a *Animation) Update() {
 	return
 }
 
-// DrawTo draws this animation to the provided screen using the provided options.
+// DrawTo draws this animation to the provided screen using the provided options. Does not automatically perform
+// translation for packed sprite sheets.
 func (a *Animation) DrawTo(screen *ebiten.Image, options *ebiten.DrawImageOptions) {
 	frame := a.FramesByTagName[a.currTag][a.currFrame]
 	screen.DrawImage(frame.Image, options)
+}
+
+// DrawPackedTo draws a packed animation to the proveded screen. A func to manage any draw options is provided -- the
+// translations needed to unpack frames from packed sprite sheets have already been performed.
+func (a *Animation) DrawPackedTo(screen *ebiten.Image, optFunc func(options *ebiten.DrawImageOptions)) {
+	opts := ebiten.DrawImageOptions{}
+	frame := a.FramesByTagName[a.currTag][a.currFrame]
+	opts.GeoM.Translate(float64(frame.SourceRect.Min.X), float64(frame.SourceRect.Min.Y))
+	optFunc(&opts)
+	screen.DrawImage(frame.Image, &opts)
 }
 
 // Bounds retrieves the bounds of the current frame.
@@ -200,4 +211,6 @@ type AniFrame struct {
 	Image *ebiten.Image
 	// DurationMillis represents the number of milliseconds this frame should be shown.
 	DurationMillis int64
+	// SourceRect is the source rectangle in the sprite sheet. Primarily used for packed sprites.
+	SourceRect image.Rectangle
 }

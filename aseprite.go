@@ -97,6 +97,7 @@ func loadNoTags(sheet *SpriteSheet) (map[string][]AniFrame, error) {
 		byTagName[""] = append(byTagName[""], AniFrame{
 			FrameIdx:       idx,
 			Image:          img,
+			SourceRect:     frame.SpriteSourceSize.ImageRect(),
 			DurationMillis: int64(frame.Duration),
 		})
 	}
@@ -120,9 +121,11 @@ func loadWithTags(sheet *SpriteSheet) (map[string][]AniFrame, error) {
 			byTagName[tag.Name] = append(byTagName[tag.Name], AniFrame{
 				FrameIdx:       i,
 				Image:          img,
+				SourceRect:     frame.SpriteSourceSize.ImageRect(),
 				DurationMillis: int64(frame.Duration),
 			})
 		}
+		fmt.Println("loaded name:", tag.Name)
 		switch tag.Direction {
 		case "reverse":
 			byTagName[tag.Name] = reverse(byTagName[tag.Name])
@@ -132,6 +135,7 @@ func loadWithTags(sheet *SpriteSheet) (map[string][]AniFrame, error) {
 			byTagName[tag.Name] = reverse(pingpong(byTagName[tag.Name]))
 		}
 	}
+	byTagName[""] = byTagName[sheet.Meta.FrameTags[0].Name]
 	return byTagName, nil
 }
 
