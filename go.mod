@@ -1,4 +1,4 @@
-module github.com/kalexmills/asebiten
+module github.com/Frabjous-Studios/asebiten
 
 go 1.18
 

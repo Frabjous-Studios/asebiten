@@ -1,7 +1,7 @@
 # asebiten
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/kalexmills/asebiten)](https://goreportcard.com/report/github.com/kalexmills/asebiten)
-![GitHub](https://img.shields.io/github/license/kalexmills/asebiten)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Frabjous-Studios/asebiten)](https://goreportcard.com/report/github.com/kalexmills/asebiten)
+![GitHub](https://img.shields.io/github/license/Frabjous-Studios/asebiten)
 
 Load exported Aseprite animations and use them in Ebitengine games.
 
@@ -21,8 +21,8 @@ import (
 	"embed"
 	"log"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/kalexmills/asebiten"
-    "github.com/kalexmills/asebiten/models/asepritev3"
+	"github.com/Frabjous-Studios/asebiten"
+    "github.com/Frabjous-Studios/asebiten/models/asepritev3"
 	_ "image/png"
 )
 
