@@ -103,14 +103,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	anim.DrawPackedTo(screen, func(opts *ebiten.DrawImageOptions) {
 		opts.GeoM.Translate(screenWidth/2-frameWidth/2, screenHeight/2-frameHeight/2)
-		//opts.GeoM.Scale(2, 4)
-		//op.GeoM.Translate(screenWidth/2, screenHeight/2)
 	})
 
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Reset()
-	op.GeoM.Translate(-float64(frameWidth)/2, float64(frameHeight))
-	op.GeoM.Scale(4, 4)
+	op.GeoM.Translate(-8, 8)
+	op.GeoM.Scale(2, 2)
 	op.GeoM.Translate(screenWidth/2, screenHeight/2)
 	indicator.DrawTo(screen, op)
 }
@@ -122,13 +120,13 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 func main() {
 	var err error
 
-	anim, err = asebiten.LoadAnimation(embedded, path)
+	anim, err = asebiten.LoadCPUAnimation(embedded, path)
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(anim)
 
-	indicator, err = asebiten.LoadAnimation(embedded, indicatorPath)
+	indicator, err = asebiten.LoadCPUAnimation(embedded, indicatorPath)
 	if err != nil {
 		log.Fatal(err)
 	}

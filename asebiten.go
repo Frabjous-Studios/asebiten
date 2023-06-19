@@ -2,8 +2,10 @@ package asebiten
 
 import (
 	"errors"
+	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"golang.org/x/exp/maps"
+	"golang.org/x/image/draw"
 	"image"
 	"time"
 )
@@ -39,6 +41,9 @@ type Animation struct {
 	// Source is a struct representing the raw JSON read from the Aesprite SpriteSheet on import. Cast to the correct
 	// version's SpriteSheet model to use.
 	Source SpriteSheet
+
+	gpuFrame  *ebiten.Image
+	needsDraw bool
 }
 
 func (r Rect) ImageRect() image.Rectangle {
@@ -92,6 +97,19 @@ func NewAnimation(anim map[string][]AniFrame) *Animation {
 		currTag:         "",
 		currFrame:       0,
 	}
+	var isCPUSprite bool
+	var rect image.Rectangle
+	for _, frames := range anim {
+		for _, frame := range frames {
+			if _, ok := frame.Image.(*ebiten.Image); !ok {
+				isCPUSprite = true
+			}
+			rect = rect.Union(frame.SourceRect.Bounds())
+		}
+	}
+	if isCPUSprite {
+		result.gpuFrame = ebiten.NewImage(rect.Dx(), rect.Dy())
+	}
 	return result
 }
 
@@ -118,6 +136,7 @@ func (a *Animation) SetFrame(idx int) error {
 	if idx < 0 || len(a.FramesByTagName[a.currTag]) <= idx {
 		return errors.New("frame index out of bounds")
 	}
+	a.needsDraw = true
 	a.currFrame = idx
 	return nil
 }
@@ -163,6 +182,9 @@ func (a *Animation) Update() {
 	for a.accumMillis > a.FramesByTagName[a.currTag][a.currFrame].DurationMillis {
 		a.accumMillis -= a.FramesByTagName[a.currTag][a.currFrame].DurationMillis
 		a.currFrame = (a.currFrame + 1) % len(a.FramesByTagName[a.currTag])
+		if a.gpuFrame != nil {
+			a.needsDraw = true
+		}
 		if a.currFrame != 0 || a.callbacks[a.currTag] == nil {
 			continue
 		}
@@ -175,7 +197,17 @@ func (a *Animation) Update() {
 // translation for packed sprite sheets.
 func (a *Animation) DrawTo(screen *ebiten.Image, options *ebiten.DrawImageOptions) {
 	frame := a.FramesByTagName[a.currTag][a.currFrame]
-	screen.DrawImage(frame.Image, options)
+	if a.gpuFrame == nil {
+		screen.DrawImage(frame.Image.(*ebiten.Image), options)
+		return
+	}
+	if a.needsDraw {
+		a.gpuFrame.Clear()
+		fmt.Println("drawing: ", frame.Image.Bounds(), frame.SourceRect)
+		draw.Draw(a.gpuFrame, frame.SourceRect, frame.Image, frame.Image.Bounds().Min, draw.Over)
+		a.needsDraw = false
+	}
+	screen.DrawImage(a.gpuFrame, options)
 }
 
 // DrawPackedTo draws a packed animation to the proveded screen. A func to manage any draw options is provided -- the
@@ -185,7 +217,16 @@ func (a *Animation) DrawPackedTo(screen *ebiten.Image, optFunc func(options *ebi
 	frame := a.FramesByTagName[a.currTag][a.currFrame]
 	opts.GeoM.Translate(float64(frame.SourceRect.Min.X), float64(frame.SourceRect.Min.Y))
 	optFunc(&opts)
-	screen.DrawImage(frame.Image, &opts)
+	if a.gpuFrame == nil {
+		screen.DrawImage(frame.Image.(*ebiten.Image), &opts)
+		return
+	}
+	if a.needsDraw {
+		a.gpuFrame.Clear()
+		draw.Draw(a.gpuFrame, a.gpuFrame.Bounds(), frame.Image, frame.Image.Bounds().Min, draw.Over)
+		a.needsDraw = false
+	}
+	screen.DrawImage(a.gpuFrame, &opts)
 }
 
 // Bounds retrieves the bounds of the current frame.
@@ -208,7 +249,7 @@ type AniFrame struct {
 	// FrameIdx is the original index of this frame from Aseprite.
 	FrameIdx int
 	// Image represents an image to use. For efficiency, it's recommended to use subimage for each frame.
-	Image *ebiten.Image
+	Image image.Image
 	// DurationMillis represents the number of milliseconds this frame should be shown.
 	DurationMillis int64
 	// SourceRect is the source rectangle in the sprite sheet. Primarily used for packed sprites.
