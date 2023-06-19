@@ -2,7 +2,6 @@ package asebiten
 
 import (
 	"errors"
-	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"golang.org/x/exp/maps"
 	"golang.org/x/image/draw"
@@ -203,7 +202,6 @@ func (a *Animation) DrawTo(screen *ebiten.Image, options *ebiten.DrawImageOption
 	}
 	if a.needsDraw {
 		a.gpuFrame.Clear()
-		fmt.Println("drawing: ", frame.Image.Bounds(), frame.SourceRect)
 		draw.Draw(a.gpuFrame, frame.SourceRect, frame.Image, frame.Image.Bounds().Min, draw.Over)
 		a.needsDraw = false
 	}

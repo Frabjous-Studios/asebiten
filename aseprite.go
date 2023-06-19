@@ -175,7 +175,6 @@ func loadWithTags(sheet *SpriteSheet, loadToGPU bool) (map[string][]AniFrame, er
 				DurationMillis: int64(frame.Duration),
 			})
 		}
-		fmt.Println("loaded name:", tag.Name)
 		switch tag.Direction {
 		case "reverse":
 			byTagName[tag.Name] = reverse(byTagName[tag.Name])

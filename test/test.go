@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	"fmt"
 	"github.com/Frabjous-Studios/asebiten"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
@@ -124,7 +123,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(anim)
 
 	indicator, err = asebiten.LoadCPUAnimation(embedded, indicatorPath)
 	if err != nil {
@@ -132,8 +130,6 @@ func main() {
 	}
 	indicator.Pause()
 	_ = indicator.SetFrame(1)
-
-	fmt.Println("loaded")
 
 	ebiten.SetWindowSize(screenWidth*2, screenHeight*2)
 	ebiten.SetWindowTitle("Aesbiten Demo")
