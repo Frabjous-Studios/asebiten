@@ -6,6 +6,7 @@ import (
 	"golang.org/x/exp/maps"
 	"golang.org/x/image/draw"
 	"image"
+	"sync"
 	"time"
 )
 
@@ -13,9 +14,13 @@ var (
 	lastTick = time.Now()
 	// TotalMillis the number of milliseconds elapsed since the game started. It is exported for flexibility. Avoid
 	// modifying it directly unless you know what you're doing.
+	//
+	// Deprecated: no longer in use or updated.
 	TotalMillis int64
 	// DeltaMillis is the number of milliseconds elapsed since the last frame, in games which call Update() at the start
 	// of each frame. It is exported for flexibility. Avoid modifying it directly unless you know what you're doing.
+	//
+	// Deprecated: no longer in use or updated.
 	DeltaMillis int64
 )
 
@@ -30,8 +35,7 @@ type Animation struct {
 	currTag   string
 	currFrame int
 
-	accumMillis int64
-	callbacks   map[string]Callback
+	callbacks map[string]Callback
 
 	// FramesByTagName lists all frames, keyed by their tag. Take care when editing the images associated with this map,
 	// as Asebiten uses subimages for each tag, even when that's redundant.
@@ -43,6 +47,8 @@ type Animation struct {
 
 	gpuFrame  *ebiten.Image
 	needsDraw bool
+
+	ticks int64
 }
 
 func (r Rect) ImageRect() image.Rectangle {
@@ -58,6 +64,15 @@ type Rect struct {
 type Size struct {
 	W int `json:"w"`
 	H int `json:"h"`
+}
+
+var tpsMut sync.Once
+var TPS int
+
+// SetTPS is automatically called before the first animation is drawn to screen. It must be explicitly called again
+// anytime that TPS is changed.
+func SetTPS() {
+	TPS = ebiten.TPS()
 }
 
 // Clone creates a shallow clone of this animation which uses the same SpriteSheet as the original, but gets its own
@@ -114,11 +129,10 @@ func NewAnimation(anim map[string][]AniFrame) *Animation {
 
 // Update should be called once at the beginning of every frame to updated DeltaMillis and TotalMillis. It measures
 // time elapsed since the last frame.
+//
+// Deprecated: calling Update every frame is no longer required for Asebiten.
 func Update() {
-	now := time.Now()
-	DeltaMillis = now.Sub(lastTick).Milliseconds()
-	TotalMillis += DeltaMillis
-	lastTick = now
+
 }
 
 // Pause pauses a currently running animation. Animations are running by default.
@@ -175,11 +189,17 @@ func (a *Animation) Update() {
 	if a.paused {
 		return
 	}
-	a.accumMillis += DeltaMillis
+	tpsMut.Do(func() {
+		SetTPS()
+	})
+	a.ticks++
+
+	elapsedMillis := int64(float64(a.ticks) / float64(TPS) * 1000)
 
 	// advance the current frame until you can't; this loop usually runs only once per tick
-	for a.accumMillis > a.FramesByTagName[a.currTag][a.currFrame].DurationMillis {
-		a.accumMillis -= a.FramesByTagName[a.currTag][a.currFrame].DurationMillis
+	for elapsedMillis > a.FramesByTagName[a.currTag][a.currFrame].DurationMillis {
+		a.ticks = 0
+		elapsedMillis -= a.FramesByTagName[a.currTag][a.currFrame].DurationMillis
 		a.currFrame = (a.currFrame + 1) % len(a.FramesByTagName[a.currTag])
 		if a.gpuFrame != nil {
 			a.needsDraw = true
@@ -192,8 +212,9 @@ func (a *Animation) Update() {
 	return
 }
 
-// DrawTo draws this animation to the provided screen using the provided options. Does not automatically perform
-// translation for packed sprite sheets.
+// DrawTo draws an animation from to the provided screen using the provided options. Does not automatically perform
+// translation for packed sprite sheets, since doing so requires modifying GeoM prior to other transformations. See
+// DrawPackedTo for that functionality.
 func (a *Animation) DrawTo(screen *ebiten.Image, options *ebiten.DrawImageOptions) {
 	frame := a.FramesByTagName[a.currTag][a.currFrame]
 	if a.gpuFrame == nil {
