@@ -6,7 +6,6 @@ import (
 	"golang.org/x/exp/maps"
 	"golang.org/x/image/draw"
 	"image"
-	"log"
 	"sync"
 )
 
@@ -179,7 +178,6 @@ func (a *Animation) Update() {
 	for a.elapsedMillis > float64(a.FramesByTagName[a.currTag][a.currFrame].DurationMillis) {
 		prior := a.elapsedMillis
 		a.elapsedMillis -= float64(a.FramesByTagName[a.currTag][a.currFrame].DurationMillis)
-		log.Println("elapsedMillis: ", prior, " - ", a.FramesByTagName[a.currTag][a.currFrame].DurationMillis, " = ", a.elapsedMillis)
 		a.currFrame = (a.currFrame + 1) % len(a.FramesByTagName[a.currTag])
 		if a.gpuFrame != nil {
 			a.needsDraw = true
