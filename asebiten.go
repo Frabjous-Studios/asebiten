@@ -33,7 +33,7 @@ type Animation struct {
 	gpuFrame  *ebiten.Image
 	needsDraw bool
 
-	ticks int64
+	elapsedMillis int64
 }
 
 func (r Rect) ImageRect() image.Rectangle {
@@ -170,14 +170,12 @@ func (a *Animation) Update() {
 	tpsMut.Do(func() {
 		SetTPS()
 	})
-	a.ticks++
 
-	elapsedMillis := int64(float64(a.ticks) / float64(TPS) * 1000)
+	a.elapsedMillis += int64(1 / float64(TPS) * 1000)
 
 	// advance the current frame until you can't; this loop usually runs only once per tick
-	for elapsedMillis > a.FramesByTagName[a.currTag][a.currFrame].DurationMillis {
-		a.ticks = 0
-		elapsedMillis -= a.FramesByTagName[a.currTag][a.currFrame].DurationMillis
+	for a.elapsedMillis > a.FramesByTagName[a.currTag][a.currFrame].DurationMillis {
+		a.elapsedMillis -= a.FramesByTagName[a.currTag][a.currFrame].DurationMillis
 		a.currFrame = (a.currFrame + 1) % len(a.FramesByTagName[a.currTag])
 		if a.gpuFrame != nil {
 			a.needsDraw = true
