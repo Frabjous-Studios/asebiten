@@ -176,7 +176,6 @@ func (a *Animation) Update() {
 
 	// advance the current frame until you can't; this loop usually runs only once per tick
 	for a.elapsedMillis > float64(a.FramesByTagName[a.currTag][a.currFrame].DurationMillis) {
-		prior := a.elapsedMillis
 		a.elapsedMillis -= float64(a.FramesByTagName[a.currTag][a.currFrame].DurationMillis)
 		a.currFrame = (a.currFrame + 1) % len(a.FramesByTagName[a.currTag])
 		if a.gpuFrame != nil {
