@@ -7,21 +7,6 @@ import (
 	"golang.org/x/image/draw"
 	"image"
 	"sync"
-	"time"
-)
-
-var (
-	lastTick = time.Now()
-	// TotalMillis the number of milliseconds elapsed since the game started. It is exported for flexibility. Avoid
-	// modifying it directly unless you know what you're doing.
-	//
-	// Deprecated: no longer in use or updated.
-	TotalMillis int64
-	// DeltaMillis is the number of milliseconds elapsed since the last frame, in games which call Update() at the start
-	// of each frame. It is exported for flexibility. Avoid modifying it directly unless you know what you're doing.
-	//
-	// Deprecated: no longer in use or updated.
-	DeltaMillis int64
 )
 
 // Animation is a collection of animations, keyed by a name called a 'tag'. Each tagged animation starts from its first
@@ -127,14 +112,6 @@ func NewAnimation(anim map[string][]AniFrame) *Animation {
 	return result
 }
 
-// Update should be called once at the beginning of every frame to updated DeltaMillis and TotalMillis. It measures
-// time elapsed since the last frame.
-//
-// Deprecated: calling Update every frame is no longer required for Asebiten.
-func Update() {
-
-}
-
 // Pause pauses a currently running animation. Animations are running by default.
 func (a *Animation) Pause() {
 	a.paused = true
@@ -171,6 +148,7 @@ func (a *Animation) SetTag(tag string) {
 		a.currFrame = 0
 	}
 	a.currTag = tag
+	a.needsDraw = true
 }
 
 // OnEnd registers the provided Callback to run on the same frame that the final frame of the animation  is crossed.

@@ -75,7 +75,6 @@ func (g *Game) Update() error {
 	case inpututil.IsKeyJustPressed(ebiten.KeyR):
 		anim.Restart()
 	}
-	asebiten.Update()
 	anim.Update()
 
 	ticks++
