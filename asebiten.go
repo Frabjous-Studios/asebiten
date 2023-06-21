@@ -6,6 +6,7 @@ import (
 	"golang.org/x/exp/maps"
 	"golang.org/x/image/draw"
 	"image"
+	"log"
 	"sync"
 )
 
@@ -175,6 +176,8 @@ func (a *Animation) Update() {
 
 	// advance the current frame until you can't; this loop usually runs only once per tick
 	for a.elapsedMillis > a.FramesByTagName[a.currTag][a.currFrame].DurationMillis {
+		// TODO: remove
+		log.Println("elapsedMillis: ", a.elapsedMillis, "durationMillis: ", a.FramesByTagName[a.currTag][a.currFrame].DurationMillis)
 		a.elapsedMillis -= a.FramesByTagName[a.currTag][a.currFrame].DurationMillis
 		a.currFrame = (a.currFrame + 1) % len(a.FramesByTagName[a.currTag])
 		if a.gpuFrame != nil {
