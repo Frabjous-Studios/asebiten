@@ -34,7 +34,7 @@ type Animation struct {
 	gpuFrame  *ebiten.Image
 	needsDraw bool
 
-	elapsedMillis int64
+	elapsedMillis float64
 }
 
 func (r Rect) ImageRect() image.Rectangle {
@@ -140,6 +140,7 @@ func (a *Animation) Toggle() {
 // Restart restarts the currently running animation from the beginning.
 func (a *Animation) Restart() {
 	a.currFrame = 0
+	a.needsDraw = true
 }
 
 // SetTag sets the currently running tag to the provided tag name. If the tag name is different from the currently
@@ -172,13 +173,13 @@ func (a *Animation) Update() {
 		SetTPS()
 	})
 
-	a.elapsedMillis += int64(1 / float64(TPS) * 1000)
+	a.elapsedMillis += 1 / float64(TPS) * 1000
 
 	// advance the current frame until you can't; this loop usually runs only once per tick
-	for a.elapsedMillis > a.FramesByTagName[a.currTag][a.currFrame].DurationMillis {
-		// TODO: remove
-		log.Println("elapsedMillis: ", a.elapsedMillis, "durationMillis: ", a.FramesByTagName[a.currTag][a.currFrame].DurationMillis)
-		a.elapsedMillis -= a.FramesByTagName[a.currTag][a.currFrame].DurationMillis
+	for a.elapsedMillis > float64(a.FramesByTagName[a.currTag][a.currFrame].DurationMillis) {
+		prior := a.elapsedMillis
+		a.elapsedMillis -= float64(a.FramesByTagName[a.currTag][a.currFrame].DurationMillis)
+		log.Println("elapsedMillis: ", prior, " - ", a.FramesByTagName[a.currTag][a.currFrame].DurationMillis, " = ", a.elapsedMillis)
 		a.currFrame = (a.currFrame + 1) % len(a.FramesByTagName[a.currTag])
 		if a.gpuFrame != nil {
 			a.needsDraw = true
